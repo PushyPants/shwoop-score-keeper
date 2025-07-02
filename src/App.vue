@@ -1,19 +1,17 @@
 <template>
   <v-app>
+    <!-- Top App Bar -->
+    <v-app-bar color="primary" dark elevation="4">
+      <v-toolbar-title class="d-flex align-center justify-center w-100">
+        <v-icon class="mr-2" size="large">mdi-cards-playing</v-icon>
+        Shwoop Score Tracker
+      </v-toolbar-title>
+    </v-app-bar>
+
     <v-main>
       <v-container fluid class="pa-4">
-        <!-- Header -->
-        <v-row justify="center" class="mb-4">
-          <v-col cols="12" class="text-center">
-            <h1 class="text-h4 font-weight-bold primary--text">
-              <v-icon class="mr-2" size="large">mdi-cards-playing</v-icon>
-              Shwoop Score Tracker
-            </h1>
-          </v-col>
-        </v-row>
-
         <!-- Leader Section -->
-        <v-row v-if="players.length > 0" justify="center" class="mb-4">
+        <v-row v-if="players.length > 0" justify="center">
           <v-col cols="12">
             <v-card class="leader-card" elevation="4">
               <v-card-text class="text-center py-4">
@@ -30,10 +28,10 @@
         </v-row>
 
         <!-- Add Player Button -->
-        <v-row justify="center" class="mb-4">
+        <v-row justify="center">
           <v-col cols="12">
             <v-btn
-              @click="addPlayer"
+              @click="showAddPlayerDialog = true"
               color="success"
               size="large"
               block
@@ -47,95 +45,89 @@
         <!-- Players List -->
         <v-row v-if="players.length > 0">
           <v-col cols="12">
-            <div class="players-container">
+            <v-list class="players-list">
               <div
                 v-for="(player, index) in players"
                 :key="player.id"
-                class="player-row"
+                class="swipe-item-container"
               >
-                <!-- Player Icon -->
-                <div class="player-icon">
-                  <v-avatar color="primary" size="40">
-                    <v-icon color="white">mdi-account</v-icon>
-                  </v-avatar>
-                </div>
-
-                <!-- Player Name -->
-                <div class="player-name">
-                  <v-text-field
-                    v-model="player.name"
-                    variant="outlined"
-                    density="compact"
-                    hide-details
-                    min-width="250"
-                    class="player-name-input"
-                    @blur="saveToStorage"
-                  />
-                </div>
-
-                <!-- Spacer -->
-                <div class="spacer"></div>
-
-                <!-- Score Input with Plus Button -->
-                <div class="score-input-group">
-                  <v-text-field
-                    v-model.number="scoreInputs[player.id]"
-                    @keyup.enter="addScore(player.id)"
-                    type="number"
-                    min="1"
-                    variant="outlined"
-                    density="compact"
-                    label="Add points"
-                    hide-details
-                    class="score-input"
-                  />
-                  <v-btn
-                    @click="addScore(player.id)"
-                    :disabled="!isValidScore(scoreInputs[player.id])"
-                    color="primary"
-                    size="small"
-                    icon="mdi-plus"
-                    class="plus-btn"
-                  />
-                </div>
-
-                <!-- Total Score -->
-                <div class="total-score">
-                  <div class="score-label-value">
-                    <span class="text-caption text-medium-emphasis">Total</span>
-                    <span class="text-h6 font-weight-bold primary--text">{{ player.score }}</span>
+                <!-- Background Actions -->
+                <div class="swipe-actions">
+                  <!-- Left action (Clear Score) -->
+                  <div class="swipe-action swipe-action-left align-baseline">
+                    <div class="d-flex flex-column justify-center align-center ml-7">
+                      <v-icon color="white" size="24">mdi-refresh</v-icon>
+                      <span class="action-text">Clear</span>
+                    </div>
+                  </div>
+                  <!-- Right action (Delete) -->
+                  <div class="swipe-action swipe-action-right align-end">
+                    <div class="d-flex flex-column justify-center align-center mr-7">
+                      <v-icon color="white" size="24">mdi-delete</v-icon>
+                      <span class="action-text">Delete</span>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                  <v-btn-group>
-                  <v-btn
-                    color="warning"
-                    size="small"
-                    icon="mdi-refresh"
-                    class="action-btn px-6"
-                    @click="clearPlayerScore(player.id)"
-                  />
-                  <v-btn
-                    color="error"
-                    size="small"
-                    icon="mdi-delete"
-                    class="action-btn px-6"
-                    @click="removePlayer(index)"
-                  />
-                </v-btn-group>
-                </div>
+                <!-- Main List Item -->
+                <v-list-item
+                  class="swipe-item"
+                  :class="{ 'swiping': swipeStates[player.id]?.swiping }"
+                  :style="{ transform: `translateX(${swipeStates[player.id]?.translateX || 0}px)` }"
+                  @touchstart="handleTouchStart($event, player.id)"
+                  @touchmove="handleTouchMove($event, player.id)"
+                  @touchend="handleTouchEnd($event, player.id, index)"
+                  @mousedown="handleMouseDown($event, player.id)"
+                  @mousemove="handleMouseMove($event, player.id)"
+                  @mouseup="handleMouseEnd($event, player.id, index)"
+                  @mouseleave="handleMouseEnd($event, player.id, index)"
+                >
+                  <template v-slot:prepend>
+                    <v-avatar color="primary" size="40">
+                      <v-icon color="white">mdi-account</v-icon>
+                    </v-avatar>
+                  </template>
+
+                  <v-list-item-title>{{ player.name }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ player.score }} points</v-list-item-subtitle>
+
+                  <template v-slot:append>
+                    <div class="actions-section">
+                      <!-- Score Input Group -->
+                      <div class="score-input-group mr-2">
+                        <v-text-field
+                          v-model.number="scoreInputs[player.id]"
+                          @keyup.enter="addScore(player.id)"
+                          type="number"
+                          min="1"
+                          variant="outlined"
+                          density="compact"
+                          label="Add points"
+                          hide-details
+                          class="score-input"
+                        />
+                        <v-btn
+                          @click="addScore(player.id)"
+                          :disabled="!isValidScore(scoreInputs[player.id])"
+                          color="primary"
+                          size="small"
+                          icon="mdi-plus"
+                          class="plus-btn"
+                        />
+                      </div>
+                    </div>
+                  </template>
+                </v-list-item>
               </div>
-            </div>
+            </v-list>
           </v-col>
         </v-row>
 
         <!-- Control Buttons -->
-        <v-row v-if="players.length > 0" justify="center" class="mt-6">
+        <v-row v-if="players.length > 0" justify="center" class="mt-2">
           <v-col cols="12">
             <v-row dense>
-              <v-col cols="sm-12 md-6">
+              <v-col cols="12" sm="6">
                 <v-btn
                   @click="showClearScoresDialog = true"
                   color="warning"
@@ -145,7 +137,7 @@
                   Clear All Scores
                 </v-btn>
               </v-col>
-              <v-col cols="sm-12 md-6">
+              <v-col cols="12" sm="6">
                 <v-btn
                   @click="showClearAllDialog = true"
                   color="error"
@@ -169,6 +161,34 @@
         </v-row>
       </v-container>
     </v-main>
+
+    <!-- Add Player Dialog -->
+    <v-dialog v-model="showAddPlayerDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6">Add New Player</v-card-title>
+        <v-card-text>
+          <v-text-field
+            v-model="newPlayerName"
+            label="Player Name"
+            variant="outlined"
+            autofocus
+            @keyup.enter="confirmAddPlayer"
+            :error-messages="playerNameError"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="cancelAddPlayer" text>Cancel</v-btn>
+          <v-btn 
+            @click="confirmAddPlayer" 
+            color="success"
+            :disabled="!isValidPlayerName"
+          >
+            Add Player
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Clear All Scores Dialog -->
     <v-dialog v-model="showClearScoresDialog" max-width="400">
@@ -200,6 +220,21 @@
       </v-card>
     </v-dialog>
 
+    <!-- Delete Player Dialog -->
+    <v-dialog v-model="showDeletePlayerDialog" max-width="400">
+      <v-card>
+        <v-card-title class="text-h6">Delete {{ selectedPlayerName }}?</v-card-title>
+        <v-card-text>
+          This will permanently remove {{ selectedPlayerName }} and their score. This cannot be undone.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn @click="showDeletePlayerDialog = false" text>Cancel</v-btn>
+          <v-btn @click="confirmDeletePlayer" color="error">Delete Player</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Clear Player Score Dialog -->
     <v-dialog v-model="showClearPlayerDialog" max-width="400">
       <v-card>
@@ -223,11 +258,20 @@ import { ref, computed, onMounted, watch } from 'vue';
 // Reactive data
 const players = ref([]);
 const scoreInputs = ref({});
+const swipeStates = ref({});
 const showClearScoresDialog = ref(false);
 const showClearAllDialog = ref(false);
 const showClearPlayerDialog = ref(false);
+const showDeletePlayerDialog = ref(false);
+const showAddPlayerDialog = ref(false);
+const newPlayerName = ref('');
 const selectedPlayerId = ref(null);
+const selectedPlayerIndex = ref(null);
 const selectedPlayerName = ref('');
+
+// Swipe constants
+const SWIPE_THRESHOLD = 80;
+const MAX_SWIPE_DISTANCE = 120;
 
 // Computed properties
 const leaderInfo = computed(() => {
@@ -248,23 +292,162 @@ const leaderText = computed(() => {
 
 const leaderScore = computed(() => leaderInfo.value.score);
 
-// Methods
-const addPlayer = () => {
+const isValidPlayerName = computed(() => {
+  return newPlayerName.value.trim().length > 0;
+});
+
+const playerNameError = computed(() => {
+  if (!newPlayerName.value.trim() && newPlayerName.value.length > 0) {
+    return ['Player name cannot be empty'];
+  }
+  if (players.value.some(p => p.name.toLowerCase() === newPlayerName.value.trim().toLowerCase())) {
+    return ['Player name already exists'];
+  }
+  return [];
+});
+
+// Swipe handling methods
+const initSwipeState = (playerId) => {
+  if (!swipeStates.value[playerId]) {
+    swipeStates.value[playerId] = {
+      startX: 0,
+      currentX: 0,
+      translateX: 0,
+      swiping: false,
+      isDragging: false
+    };
+  }
+};
+
+const handleTouchStart = (event, playerId) => {
+  initSwipeState(playerId);
+  const touch = event.touches[0];
+  swipeStates.value[playerId].startX = touch.clientX;
+  swipeStates.value[playerId].isDragging = true;
+  swipeStates.value[playerId].swiping = true;
+};
+
+const handleTouchMove = (event, playerId) => {
+  if (!swipeStates.value[playerId]?.isDragging) return;
+  
+  event.preventDefault();
+  const touch = event.touches[0];
+  const deltaX = touch.clientX - swipeStates.value[playerId].startX;
+  
+  // Limit swipe distance
+  const clampedDelta = Math.max(-MAX_SWIPE_DISTANCE, Math.min(MAX_SWIPE_DISTANCE, deltaX));
+  swipeStates.value[playerId].translateX = clampedDelta;
+  swipeStates.value[playerId].currentX = touch.clientX;
+};
+
+const handleTouchEnd = (event, playerId, playerIndex) => {
+  if (!swipeStates.value[playerId]?.isDragging) return;
+  
+  const deltaX = swipeStates.value[playerId].translateX;
+  
+  // Check if swipe threshold was met
+  if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+    if (deltaX > 0) {
+      // Swiped right - clear score
+      clearPlayerScore(playerId);
+    } else {
+      // Swiped left - delete player (with confirmation)
+      showDeleteConfirmation(playerId, playerIndex);
+    }
+  }
+  
+  // Reset swipe state
+  resetSwipeState(playerId);
+};
+
+// Mouse events for desktop support
+const handleMouseDown = (event, playerId) => {
+  initSwipeState(playerId);
+  swipeStates.value[playerId].startX = event.clientX;
+  swipeStates.value[playerId].isDragging = true;
+  swipeStates.value[playerId].swiping = true;
+};
+
+const handleMouseMove = (event, playerId) => {
+  if (!swipeStates.value[playerId]?.isDragging) return;
+  
+  const deltaX = event.clientX - swipeStates.value[playerId].startX;
+  const clampedDelta = Math.max(-MAX_SWIPE_DISTANCE, Math.min(MAX_SWIPE_DISTANCE, deltaX));
+  swipeStates.value[playerId].translateX = clampedDelta;
+};
+
+const handleMouseEnd = (event, playerId, playerIndex) => {
+  if (!swipeStates.value[playerId]?.isDragging) return;
+  
+  const deltaX = swipeStates.value[playerId].translateX;
+  
+  if (Math.abs(deltaX) > SWIPE_THRESHOLD) {
+    if (deltaX > 0) {
+      clearPlayerScore(playerId);
+    } else {
+      showDeleteConfirmation(playerId, playerIndex);
+    }
+  }
+  
+  resetSwipeState(playerId);
+};
+
+const resetSwipeState = (playerId) => {
+  if (swipeStates.value[playerId]) {
+    swipeStates.value[playerId].translateX = 0;
+    swipeStates.value[playerId].swiping = false;
+    swipeStates.value[playerId].isDragging = false;
+  }
+};
+
+// Player management methods
+const confirmAddPlayer = () => {
+  if (!isValidPlayerName.value || playerNameError.value.length > 0) return;
+  
   const newPlayer = {
     id: Date.now(),
-    name: `Player ${players.value.length + 1}`,
+    name: newPlayerName.value.trim(),
     score: 0
   };
   players.value.push(newPlayer);
   scoreInputs.value[newPlayer.id] = '';
+  initSwipeState(newPlayer.id);
+  
+  // Reset dialog
+  newPlayerName.value = '';
+  showAddPlayerDialog.value = false;
   saveToStorage();
 };
 
-const removePlayer = (index) => {
-  const playerId = players.value[index].id;
-  players.value.splice(index, 1);
-  delete scoreInputs.value[playerId];
-  saveToStorage();
+const cancelAddPlayer = () => {
+  newPlayerName.value = '';
+  showAddPlayerDialog.value = false;
+};
+
+const showDeleteConfirmation = (playerId, playerIndex) => {
+  const player = players.value.find(p => p.id === playerId);
+  if (player) {
+    selectedPlayerId.value = playerId;
+    selectedPlayerIndex.value = playerIndex;
+    selectedPlayerName.value = player.name;
+    showDeletePlayerDialog.value = true;
+  }
+};
+
+const confirmDeletePlayer = () => {
+  if (selectedPlayerIndex.value !== null) {
+    const playerId = players.value[selectedPlayerIndex.value].id;
+    players.value.splice(selectedPlayerIndex.value, 1);
+    delete scoreInputs.value[playerId];
+    delete swipeStates.value[playerId];
+    saveToStorage();
+  }
+  
+  // Reset dialog state
+  showDeletePlayerDialog.value = false;
+  selectedPlayerId.value = null;
+  selectedPlayerIndex.value = null;
+  selectedPlayerName.value = '';
 };
 
 const isValidScore = (score) => {
@@ -314,6 +497,7 @@ const clearAllScores = () => {
 const clearAll = () => {
   players.value = [];
   scoreInputs.value = {};
+  swipeStates.value = {};
   showClearAllDialog.value = false;
   saveToStorage();
 };
@@ -326,9 +510,10 @@ const loadFromStorage = () => {
   const saved = localStorage.getItem('shwoop-players');
   if (saved) {
     players.value = JSON.parse(saved);
-    // Initialize score inputs for loaded players
+    // Initialize score inputs and swipe states for loaded players
     players.value.forEach(player => {
       scoreInputs.value[player.id] = '';
+      initSwipeState(player.id);
     });
   }
 };
@@ -364,50 +549,81 @@ watch(players, saveToStorage, { deep: true });
   }
 }
 
-.players-container {
+.players-list {
+  padding: 0;
+}
+
+.swipe-item-container {
+  position: relative;
+  margin-bottom: 8px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  z-index: 1;
+}
+
+.swipe-action {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  gap: 4px;
 }
 
-.player-row {
+.swipe-action-left {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+}
+
+.swipe-action-right {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.action-text {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.swipe-item {
+  position: relative;
+  z-index: 2;
+  background: white;
+  transition: transform 0.2s ease-out;
+  user-select: none;
+  cursor: grab;
+}
+
+.swipe-item.swiping {
+  transition: none;
+  cursor: grabbing;
+}
+
+.swipe-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.actions-section {
   display: flex;
   align-items: center;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-  padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  gap: 12px;
-}
-
-.player-row:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.player-icon {
   flex-shrink: 0;
-}
-
-.player-name {
-  flex-shrink: 0;
-  width: 140px;
-}
-
-.player-name-input {
-  max-width: 140px;
-}
-
-.spacer {
-  flex-grow: 1;
 }
 
 .score-input-group {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
 }
 
 .score-input {
@@ -420,35 +636,11 @@ watch(players, saveToStorage, { deep: true });
 }
 
 .plus-btn {
-  flex-shrink: 0;
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
   border-top-right-radius: 6px !important;
   border-bottom-right-radius: 6px !important;
   margin-left: -1px;
-}
-
-.total-score {
-  flex-shrink: 0;
-  min-width: 60px;
-  text-align: center;
-}
-
-.score-label-value {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.2;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  flex-shrink: 0;
 }
 
 /* Mobile optimizations */
@@ -457,41 +649,24 @@ watch(players, saveToStorage, { deep: true });
     padding: 8px !important;
   }
   
-  .player-row {
-    padding: 8px 12px;
-    gap: 8px;
-  }
-  
-  .player-name {
-    width: 100px;
-  }
-  
-  .player-name-input {
-    max-width: 100px;
-  }
-  
   .score-input {
     width: 80px;
   }
   
-  .total-score {
-    min-width: 50px;
-  }
-  
-  .score-label-value {
-    font-size: 0.9em;
-  }
-  
-  .action-buttons {
-    gap: 2px;
+  .actions-section {
+    gap: 4px;
   }
 }
 
-/* Very small screens - stack score label/value */
+/* Very small screens - stack actions */
 @media (max-width: 480px) {
-  .score-label-value {
-    display: flex;
+  .actions-section {
     flex-direction: column;
+    gap: 8px;
+  }
+  
+  .score-input-group {
+    order: 1;
   }
 }
 </style>
