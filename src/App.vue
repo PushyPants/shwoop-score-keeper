@@ -98,13 +98,15 @@
                         <v-text-field
                           v-model.number="scoreInputs[player.id]"
                           @keyup.enter="addScore(player.id)"
-                          type="number"
                           min="1"
                           variant="outlined"
                           density="compact"
                           label="Add points"
                           hide-details
                           class="score-input"
+                          :inputmode="'numeric'"
+                          :pattern="'[0-9]*'"
+                          type="text"
                         />
                         <v-btn
                           @click="addScore(player.id)"
