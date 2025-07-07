@@ -266,25 +266,12 @@
       persistent
       @click:outside="closeCalculator"
     >
-      <v-card>
-        <v-card-title class="d-flex justify-space-between align-center">
-          <span>Card Calculator</span>
-          <v-btn
-            @click="closeCalculator"
-            icon="mdi-close"
-            variant="text"
-            size="small"
-          />
-        </v-card-title>
-        <v-card-text class="pa-0">
-          <CardCalculator
-            v-if="showCalculatorDialog"
-            :userId="selectedCalculatorPlayerId"
-            @result="handleCalculatorResult"
-            @close="closeCalculator"
-          />
-        </v-card-text>
-      </v-card>
+      <CardCalculator
+        v-if="showCalculatorDialog"
+        :userId="selectedCalculatorPlayerId"
+        @result="handleCalculatorResult"
+        @close="closeCalculator"
+      />
     </v-dialog>
   </v-app>
 </template>

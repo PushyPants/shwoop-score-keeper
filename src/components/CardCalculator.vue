@@ -1,8 +1,16 @@
 <template>
   <v-card class="card-calculator" elevation="4">
-    <v-card-title class="text-center pb-2">
-      <v-icon class="mr-2" color="primary">mdi-calculator</v-icon>
-      Card Calculator
+    <v-card-title class="d-flex justify-space-between align-center pb-2">
+      <div class="d-flex align-center">
+        <v-icon class="mr-2" color="primary">mdi-calculator</v-icon>
+        Card Calculator
+      </div>
+      <v-btn
+        @click="$emit('close')"
+        icon="mdi-close"
+        variant="text"
+        size="small"
+      />
     </v-card-title>
     
     <v-card-text>
@@ -196,7 +204,7 @@ const done = () => {
 }
 
 .card-btn {
-  aspect-ratio: 3/4;
+  aspect-ratio: 2.5/4;
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;
