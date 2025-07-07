@@ -109,6 +109,13 @@
                           type="text"
                         />
                         <v-btn
+                          @click="openCalculator(player.id)"
+                          color="secondary"
+                          size="small"
+                          icon="mdi-calculator"
+                          class="calculator-btn"
+                        />
+                        <v-btn
                           @click="addScore(player.id)"
                           :disabled="!isValidScore(scoreInputs[player.id])"
                           color="primary"
@@ -251,11 +258,40 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Card Calculator Dialog -->
+    <v-dialog 
+      v-model="showCalculatorDialog" 
+      max-width="500"
+      persistent
+      @click:outside="closeCalculator"
+    >
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>Card Calculator</span>
+          <v-btn
+            @click="closeCalculator"
+            icon="mdi-close"
+            variant="text"
+            size="small"
+          />
+        </v-card-title>
+        <v-card-text class="pa-0">
+          <CardCalculator
+            v-if="showCalculatorDialog"
+            :userId="selectedCalculatorPlayerId"
+            @result="handleCalculatorResult"
+            @close="closeCalculator"
+          />
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import CardCalculator from './components/CardCalculator.vue';
 
 // Reactive data
 const players = ref([]);
@@ -266,10 +302,12 @@ const showClearAllDialog = ref(false);
 const showClearPlayerDialog = ref(false);
 const showDeletePlayerDialog = ref(false);
 const showAddPlayerDialog = ref(false);
+const showCalculatorDialog = ref(false);
 const newPlayerName = ref('');
 const selectedPlayerId = ref(null);
 const selectedPlayerIndex = ref(null);
 const selectedPlayerName = ref('');
+const selectedCalculatorPlayerId = ref(null);
 
 // Swipe constants
 const SWIPE_THRESHOLD = 80;
@@ -408,6 +446,7 @@ const confirmAddPlayer = () => {
   
   const newPlayer = {
     id: Date.now(),
+    playerId: generatePlayerId(),
     name: newPlayerName.value.trim(),
     score: 0
   };
@@ -419,6 +458,40 @@ const confirmAddPlayer = () => {
   newPlayerName.value = '';
   showAddPlayerDialog.value = false;
   saveToStorage();
+};
+
+const generatePlayerId = () => {
+  return 'player_' + Math.random().toString(36).substr(2, 9);
+};
+
+const openCalculator = (playerId) => {
+  const player = players.value.find(p => p.id === playerId);
+  if (player) {
+    // Ensure player has a playerId
+    if (!player.playerId) {
+      player.playerId = generatePlayerId();
+    }
+    selectedCalculatorPlayerId.value = player.playerId;
+    showCalculatorDialog.value = true;
+  }
+};
+
+const closeCalculator = () => {
+  showCalculatorDialog.value = false;
+  selectedCalculatorPlayerId.value = null;
+};
+
+const handleCalculatorResult = (result) => {
+  // result is an object like { playerId: total }
+  const playerId = Object.keys(result)[0];
+  const total = result[playerId];
+  
+  // Find the player by playerId and add the score
+  const player = players.value.find(p => p.playerId === playerId);
+  if (player && total > 0) {
+    player.score += total;
+    saveToStorage();
+  }
 };
 
 const cancelAddPlayer = () => {
@@ -512,11 +585,19 @@ const loadFromStorage = () => {
   const saved = localStorage.getItem('shwoop-players');
   if (saved) {
     players.value = JSON.parse(saved);
+    // Ensure all loaded players have playerIds
+    players.value.forEach(player => {
+      if (!player.playerId) {
+        player.playerId = generatePlayerId();
+      }
+    });
     // Initialize score inputs and swipe states for loaded players
     players.value.forEach(player => {
       scoreInputs.value[player.id] = '';
       initSwipeState(player.id);
     });
+    // Save back to storage if we added playerIds
+    saveToStorage();
   }
 };
 
@@ -635,6 +716,15 @@ watch(players, saveToStorage, { deep: true });
 .score-input :deep(.v-field) {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+}
+
+.calculator-btn {
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .plus-btn {
@@ -642,7 +732,8 @@ watch(players, saveToStorage, { deep: true });
   border-bottom-left-radius: 0 !important;
   border-top-right-radius: 6px !important;
   border-bottom-right-radius: 6px !important;
-  margin-left: -1px;
+  margin-left: 0 !important;
+  border-left: none !important;
 }
 
 /* Mobile optimizations */
