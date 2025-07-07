@@ -17,13 +17,16 @@
       <!-- Display Fields -->
       <div class="calculator-display mb-4">
         <!-- Equation Display -->
-        <v-text-field
+        <v-textarea
           :model-value="equationDisplay"
           label="Cards Added"
           variant="outlined"
           readonly
           class="equation-field"
           hide-details
+          auto-grow
+          rows="1"
+          no-resize
         />
         
         <!-- Total Display -->
@@ -40,54 +43,50 @@
       <!-- Card Buttons Grid -->
       <div class="card-buttons-grid mb-4">
         <!-- Ace -->
-        <v-btn
+        <div
           @click="addCard('A', 1)"
           class="card-btn ace-btn"
-          size="large"
         >
           <div class="card-content">
             <div class="card-value">A</div>
             <div class="card-suit">♠</div>
           </div>
-        </v-btn>
+        </div>
 
         <!-- Number Cards 2-9 -->
-        <v-btn
+        <div
           v-for="num in [2, 3, 4, 5, 6, 7, 8, 9]"
           :key="num"
           @click="addCard(num.toString(), num)"
           class="card-btn number-btn"
-          size="large"
         >
           <div class="card-content">
             <div class="card-value">{{ num }}</div>
             <div class="card-suit">♦</div>
           </div>
-        </v-btn>
+        </div>
 
         <!-- Face Card -->
-        <v-btn
+        <div
           @click="addCard('K', 10)"
           class="card-btn face-btn"
-          size="large"
         >
           <div class="card-content">
             <div class="card-value">K</div>
             <div class="card-suit">♥</div>
           </div>
-        </v-btn>
+        </div>
 
         <!-- Wild Card -->
-        <v-btn
+        <div
           @click="addCard('W', 50)"
           class="card-btn wild-btn"
-          size="large"
         >
           <div class="card-content">
             <div class="card-value">W</div>
             <div class="card-suit">★</div>
           </div>
-        </v-btn>
+        </div>
       </div>
 
       <!-- Action Buttons -->
@@ -206,12 +205,18 @@ const done = () => {
 }
 
 .card-btn {
-  aspect-ratio: 2.5/8;
+  height: 120px;
+  width: 100%;
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
 }
 
 .card-btn:hover {
@@ -289,7 +294,7 @@ const done = () => {
   }
   
   .card-btn {
-    aspect-ratio: 2.5/7;
+    height: 100px;
   }
   
   .card-value {
