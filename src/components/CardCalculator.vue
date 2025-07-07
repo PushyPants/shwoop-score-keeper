@@ -138,7 +138,9 @@ const cards = ref([]);
 // Computed properties
 const equationDisplay = computed(() => {
   if (cards.value.length === 0) return '';
-  return cards.value.map(card => card.value).join(' + ') + (cards.value.length > 0 ? ' + ' : '');
+  return cards.value.map((card, index) => {
+    return index === 0 ? card.value.toString() : `+ ${card.value}`;
+  }).join(' ');
 });
 
 const total = computed(() => {
@@ -204,7 +206,7 @@ const done = () => {
 }
 
 .card-btn {
-  aspect-ratio: 2.5/4;
+  aspect-ratio: 2.5/8;
   border: 2px solid #ddd;
   border-radius: 8px;
   background: white;
@@ -287,7 +289,7 @@ const done = () => {
   }
   
   .card-btn {
-    aspect-ratio: 2.5/3.5;
+    aspect-ratio: 2.5/7;
   }
   
   .card-value {
