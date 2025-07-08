@@ -193,15 +193,24 @@
     </v-main>
 
     <!-- Add Player Dialog -->
-    <v-dialog v-model="showAddPlayerDialog" max-width="400">
+    <v-dialog v-model="showAddPlayerDialog" max-width="400" persistent>
       <v-card>
-        <v-card-title class="text-h6">Add New Player</v-card-title>
+        <v-card-title class="d-flex justify-space-between align-center text-h6">
+          Add New Player
+          <v-btn
+            @click="cancelAddPlayer"
+            icon="mdi-close"
+            variant="text"
+            size="small"
+          />
+        </v-card-title>
         <v-card-text>
           <v-text-field
             v-model="newPlayerName"
             label="Player Name"
             variant="outlined"
             autofocus
+            ref="playerNameInput"
             @keyup.enter="confirmAddPlayer"
             :error-messages="playerNameError"
           />
@@ -298,7 +307,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import CardCalculator from './components/CardCalculator.vue';
 
 // Reactive data
@@ -316,6 +325,7 @@ const selectedPlayerId = ref(null);
 const selectedPlayerIndex = ref(null);
 const selectedPlayerName = ref('');
 const selectedCalculatorPlayerId = ref(null);
+const playerNameInput = ref(null);
 
 // Swipe constants
 const SWIPE_THRESHOLD = 80;
@@ -512,10 +522,16 @@ const confirmAddPlayer = () => {
   scoreInputs.value[newPlayer.id] = '';
   initSwipeState(newPlayer.id);
   
-  // Reset dialog
+  // Clear input and refocus for next player
   newPlayerName.value = '';
-  showAddPlayerDialog.value = false;
   saveToStorage();
+  
+  // Refocus the input field
+  nextTick(() => {
+    if (playerNameInput.value) {
+      playerNameInput.value.focus();
+    }
+  });
 };
 
 const generatePlayerId = () => {
