@@ -17,7 +17,7 @@
               <v-card-text class="py-4">
                 <v-row>
                   <!-- Left Column - Leader Info -->
-                  <v-col cols="6" class="text-center">
+                  <v-col :cols="shouldShowRunnersUp ? 6 : 12" class="text-center">
                     <v-icon class="crown-icon mb-2" size="40" color="amber">mdi-crown</v-icon>
                     <div class="text-h6 font-weight-bold">
                       {{ leaderText }}
