@@ -246,6 +246,7 @@ const done = () => {
   font-size: 18px;
   font-weight: bold;
   line-height: 1;
+}
 /* Card-specific styling */
 .ace-btn .card-content {
   color: #000;
