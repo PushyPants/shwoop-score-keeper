@@ -11,17 +11,38 @@
     <v-main>
       <v-container fluid class="pa-4">
         <!-- Leader Section -->
-        <v-row v-if="players.length > 0" justify="center">
+        <v-row v-if="shouldShowLeaderboard" justify="center">
           <v-col cols="12">
             <v-card class="leader-card" elevation="4">
-              <v-card-text class="text-center py-4">
-                <v-icon class="crown-icon mb-2" size="40" color="amber">mdi-crown</v-icon>
-                <div class="text-h6 font-weight-bold">
-                  {{ leaderText }}
-                </div>
-                <div class="text-h4 font-weight-bold primary--text">
-                  {{ leaderScore }} points
-                </div>
+              <v-card-text class="py-4">
+                <v-row>
+                  <!-- Left Column - Leader Info -->
+                  <v-col cols="6" class="text-center">
+                    <v-icon class="crown-icon mb-2" size="40" color="amber">mdi-crown</v-icon>
+                    <div class="text-h6 font-weight-bold">
+                      {{ leaderText }}
+                    </div>
+                    <div class="text-h4 font-weight-bold primary--text">
+                      {{ leaderScore }} points
+                    </div>
+                  </v-col>
+                  
+                  <!-- Right Column - Runners Up -->
+                  <v-col cols="6" v-if="shouldShowRunnersUp">
+                    <div class="text-subtitle-1 font-weight-medium mb-2 text-center">
+                      {{ runnersUpTitle }}
+                    </div>
+                    <div class="runners-up-list">
+                      <div 
+                        v-for="player in runnersUpList" 
+                        :key="player.id"
+                        class="runner-up-item"
+                      >
+                        {{ player.name }} - {{ player.score }}
+                      </div>
+                    </div>
+                  </v-col>
+                </v-row>
               </v-card-text>
             </v-card>
           </v-col>
@@ -305,19 +326,69 @@ const leaderInfo = computed(() => {
   if (players.value.length === 0) return { leaders: [], score: 0 };
   
   const maxScore = Math.max(...players.value.map(p => p.score));
+  
+  // Don't show leaderboard if no one has scored
+  if (maxScore === 0) return { leaders: [], score: 0 };
+  
   const leaders = players.value.filter(p => p.score === maxScore);
   
   return { leaders, score: maxScore };
+});
+
+const shouldShowLeaderboard = computed(() => {
+  return players.value.length > 0 && leaderInfo.value.score > 0;
 });
 
 const leaderText = computed(() => {
   const { leaders } = leaderInfo.value;
   if (leaders.length === 0) return '';
   if (leaders.length === 1) return leaders[0].name;
-  return `${leaders.map(p => p.name).join(' & ')} (Tie)`;
+  if (leaders.length === 2) return `${leaders.map(p => p.name).join(' & ')} (Tie)`;
+  return `${leaders.length}-way tie`;
 });
 
 const leaderScore = computed(() => leaderInfo.value.score);
+
+const shouldShowRunnersUp = computed(() => {
+  // Don't show if only one player total
+  if (players.value.length <= 1) return false;
+  
+  const { leaders } = leaderInfo.value;
+  
+  // For 3+ way ties, show all players
+  if (leaders.length >= 3) return true;
+  
+  // For 1-2 way ties, show if there are runners up
+  const runnersUp = players.value.filter(p => p.score < leaderInfo.value.score && p.score > 0);
+  return runnersUp.length > 0;
+});
+
+const runnersUpTitle = computed(() => {
+  const { leaders } = leaderInfo.value;
+  return leaders.length >= 3 ? 'All Players' : 'Runners Up';
+});
+
+const runnersUpList = computed(() => {
+  const { leaders } = leaderInfo.value;
+  
+  let playersToShow;
+  
+  if (leaders.length >= 3) {
+    // Show all players with scores > 0
+    playersToShow = players.value.filter(p => p.score > 0);
+  } else {
+    // Show only runners up (not the leaders)
+    playersToShow = players.value.filter(p => p.score < leaderInfo.value.score && p.score > 0);
+  }
+  
+  // Sort by score (highest first), then alphabetically by name
+  return playersToShow.sort((a, b) => {
+    if (a.score !== b.score) {
+      return b.score - a.score; // Higher scores first
+    }
+    return a.name.localeCompare(b.name); // Alphabetical for ties
+  });
+});
 
 const isValidPlayerName = computed(() => {
   return newPlayerName.value.trim().length > 0;
@@ -621,6 +692,18 @@ watch(players, saveToStorage, { deep: true });
 
 .players-list {
   padding: 0;
+}
+
+.runners-up-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.runner-up-item {
+  padding: 2px 0;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
 }
 
 .swipe-item-container {
