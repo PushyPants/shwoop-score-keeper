@@ -28,7 +28,7 @@
                   </v-col>
                   
                   <!-- Right Column - Runners Up -->
-                  <v-col cols="6" v-if="shouldShowRunnersUp">
+                  <v-col cols="6" v-if="shouldShowRunnersUp" class="runners-up-column">
                     <div class="text-subtitle-1 font-weight-medium mb-2 text-center">
                       {{ runnersUpTitle }}
                     </div>
@@ -710,6 +710,11 @@ watch(players, saveToStorage, { deep: true });
   padding: 0;
 }
 
+.runners-up-column {
+  border-left: 2px solid #e0e0e0;
+  padding-left: 16px !important;
+}
+
 .runners-up-list {
   max-height: 120px;
   overflow-y: auto;
@@ -717,8 +722,9 @@ watch(players, saveToStorage, { deep: true });
 
 .runner-up-item {
   padding: 2px 0;
-  font-size: 14px;
-  color: #666;
+  font-size: 15px;
+  font-weight: 500;
+  color: #424242;
   text-align: center;
 }
 
