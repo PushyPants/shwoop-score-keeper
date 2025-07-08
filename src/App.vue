@@ -110,10 +110,10 @@
                         />
                         <v-btn
                           @click="openCalculator(player.id)"
-                          color="secondary"
+                          color="purple"
                           size="small"
                           icon="mdi-calculator"
-                          class="calculator-btn"
+                          class="calculator-btn snazzy-calc-btn"
                         />
                         <v-btn
                           @click="addScore(player.id)"
@@ -712,6 +712,22 @@ watch(players, saveToStorage, { deep: true });
   border-right: none !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+.snazzy-calc-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+}
+
+.snazzy-calc-btn:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+  transform: scale(1.05) !important;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4) !important;
+}
+
+.snazzy-calc-btn:active {
+  transform: scale(0.98) !important;
 }
 
 .plus-btn {
