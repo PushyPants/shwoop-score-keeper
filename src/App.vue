@@ -711,7 +711,7 @@ watch(players, saveToStorage, { deep: true });
 }
 
 .runners-up-column {
-  border-left: 2px solid #e0e0e0;
+  border-left: 2px solid #ffb74d;
   padding-left: 16px !important;
 }
 
@@ -722,10 +722,16 @@ watch(players, saveToStorage, { deep: true });
 
 .runner-up-item {
   padding: 2px 0;
-  font-size: 15px;
-  font-weight: 500;
-  color: #424242;
+  font-size: 16px;
+  font-weight: 600;
+  color: #212121;
   text-align: center;
+}
+
+.runners-up-column .text-subtitle-1 {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #212121 !important;
 }
 
 .swipe-item-container {
