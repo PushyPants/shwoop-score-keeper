@@ -205,7 +205,7 @@ const done = () => {
 }
 
 .card-btn {
-  height: 120px;
+  height: 90px;
   width: 100%;
   border: 2px solid #ddd;
   border-radius: 8px;
@@ -294,7 +294,7 @@ const done = () => {
   }
   
   .card-btn {
-    height: 100px;
+    height: 75px;
   }
   
   .card-value {
