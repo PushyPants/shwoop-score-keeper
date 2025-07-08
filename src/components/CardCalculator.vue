@@ -44,7 +44,8 @@
       <div class="card-buttons-grid mb-4">
         <!-- Ace -->
         <div
-          @click="addCard('A', 1, $event)"
+          v-ripple
+          @click="addCard('A', 1)"
           class="card-btn ace-btn"
         >
           <div class="card-content">
@@ -57,7 +58,8 @@
         <div
           v-for="num in [2, 3, 4, 5, 6, 7, 8, 9]"
           :key="num"
-          @click="addCard(num.toString(), num, $event)"
+          v-ripple
+          @click="addCard(num.toString(), num)"
           class="card-btn number-btn"
         >
           <div class="card-content">
@@ -68,7 +70,8 @@
 
         <!-- Face Card -->
         <div
-          @click="addCard('K', 10, $event)"
+          v-ripple
+          @click="addCard('K', 10)"
           class="card-btn face-btn"
         >
           <div class="card-content">
@@ -79,7 +82,8 @@
 
         <!-- Wild Card -->
         <div
-          @click="addCard('W', 50, $event)"
+          v-ripple
+          @click="addCard('W', 50)"
           class="card-btn wild-btn"
         >
           <div class="card-content">
@@ -147,8 +151,7 @@ const total = computed(() => {
 });
 
 // Methods
-const addCard = (display, value, event) => {
-  createRipple(event);
+const addCard = (display, value) => {
   cards.value.push({
     display,
     value,
@@ -156,28 +159,6 @@ const addCard = (display, value, event) => {
   });
 };
 
-const createRipple = (event) => {
-  const button = event.currentTarget;
-  const rect = button.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height);
-  const x = event.clientX - rect.left - size / 2;
-  const y = event.clientY - rect.top - size / 2;
-  
-  const ripple = document.createElement('span');
-  ripple.className = 'ripple';
-  ripple.style.width = ripple.style.height = size + 'px';
-  ripple.style.left = x + 'px';
-  ripple.style.top = y + 'px';
-  
-  button.appendChild(ripple);
-  
-  // Remove ripple after animation
-  setTimeout(() => {
-    if (ripple.parentNode) {
-      ripple.parentNode.removeChild(ripple);
-    }
-  }, 600);
-};
 const backspace = () => {
   if (cards.value.length > 0) {
     cards.value.pop();
@@ -240,8 +221,6 @@ const done = () => {
   align-items: center;
   justify-content: center;
   user-select: none;
-  position: relative;
-  overflow: hidden;
 }
 
 .card-btn:hover {
@@ -267,30 +246,6 @@ const done = () => {
   font-size: 18px;
   font-weight: bold;
   line-height: 1;
-}
-
-.card-suit {
-  font-size: 16px;
-  margin-top: 2px;
-}
-
-/* Ripple Effect */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.6);
-  transform: scale(0);
-  animation: ripple-animation 0.6s linear;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes ripple-animation {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
 /* Card-specific styling */
 .ace-btn .card-content {
   color: #000;
@@ -300,9 +255,6 @@ const done = () => {
   color: #000;
 }
 
-.ace-btn .ripple {
-  background: rgba(0, 0, 0, 0.2);
-}
 .number-btn .card-content {
   color: #d32f2f;
 }
@@ -311,9 +263,6 @@ const done = () => {
   color: #d32f2f;
 }
 
-.number-btn .ripple {
-  background: rgba(211, 47, 47, 0.3);
-}
 .face-btn .card-content {
   color: #d32f2f;
 }
@@ -322,9 +271,6 @@ const done = () => {
   color: #d32f2f;
 }
 
-.face-btn .ripple {
-  background: rgba(211, 47, 47, 0.3);
-}
 .wild-btn {
   background: linear-gradient(135deg, #9c27b0, #673ab7) !important;
   border-color: #9c27b0 !important;
@@ -338,9 +284,6 @@ const done = () => {
   color: #ffd700;
 }
 
-.wild-btn .ripple {
-  background: rgba(255, 255, 255, 0.4);
-}
 .action-buttons {
   display: flex;
   gap: 8px;
