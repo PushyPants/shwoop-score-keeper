@@ -715,15 +715,15 @@ watch(players, saveToStorage, { deep: true });
 }
 
 .snazzy-calc-btn {
-  background: #00e676 !important;
+  background: #4caf50 !important;
   color: white !important;
   transition: all 0.3s ease !important;
 }
 
 .snazzy-calc-btn:hover {
-  background: #00c853 !important;
+  background: #388e3c !important;
   transform: scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(0, 230, 118, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
 }
 
 .snazzy-calc-btn:active {
