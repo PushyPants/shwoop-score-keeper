@@ -718,16 +718,19 @@ watch(players, saveToStorage, { deep: true });
   background: #4caf50 !important;
   color: white !important;
   transition: all 0.3s ease !important;
+  box-shadow: none !important;
+  elevation: 0 !important;
 }
 
 .snazzy-calc-btn:hover {
   background: #388e3c !important;
   transform: scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+  box-shadow: none !important;
 }
 
 .snazzy-calc-btn:active {
   transform: scale(0.98) !important;
+  box-shadow: none !important;
 }
 
 .plus-btn {
